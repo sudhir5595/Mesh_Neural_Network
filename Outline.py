@@ -11,7 +11,7 @@ class Net(nn.module):
         self.Mesh1 = Mesh1()
         self.Mesh2 = Mesh2()
         self.Mesh3 = Mesh3()
-        self.mlp1 = mlp1()
+        self.mlp1 = mlp1()              # mlp left to implement
         self.mlp2 = mlp2()
         self.mlp3 = mlp3()
         
@@ -48,12 +48,12 @@ class Net(nn.module):
 class spatial_Des(nn.module):
     def __init__(self):
         super(spatial_Des,self).__init__()
-        self.linear1 = nn.Linear(n*3,n*32)
-        self.linear2 = nn.Linear(n*32,n*64)
+        self.linear1 = nn.Linear(n*3,n*64)
+        self.linear2 = nn.Linear(n*64,n*64)
         
     def forward(self,x):
         x = F.relu(self.linear1(x))
-        x = self.linear(x)
+        x = self.linear2(x)
         return x
 
 
@@ -85,13 +85,47 @@ class structural_Des(nn.module):
 # In[ ]:
 
 
-'''
-class Kernel_Correlation(nn.module):
+
+class Face_Rotate_Conv(nn.module):
     def __init__(self):
-        super(Kernel_Correlation,self).__init__()
-        self.f = 
+        super(Face_Rotate_Conv,self).__init__()
+        self.linear1 = nn.Linear(9,32)
+        self.linear2 = nn.Linear(32,32)
+        self.linear3 = nn.Linear(32,64)
+        self.linear4 = nn.Linear(64,64)
         
-'''        
+    def forward(self,corner):                # corner is n*9 . we take these face wise and apply an mlp on each of them individually
+        for i in range(n):
+            corner_1_i = corner[i*9:i*9+3]
+            corner_2_i = corner[i*9+3:i*9+6]
+            corner_3_i = corner[i*9+6:i*9+9]
+
+            for x in corner_1_i:
+                for y in corner_2_i:
+                    vec1 = np.append(vec1,x*y)
+                    vec1_new = self.linear2(F.relu(self.linear1(vec1)))
+
+            for x in corner_2_i:
+                for y in corner_3_i:
+                    vec2 = np.append(vec2,x*y)
+                    vec2_new = self.linear2(F.relu(self.linear1(vec2)))
+
+            for x in corner_3_i:
+                for y in corner_1_i:
+                    vec3 = np.append(vec3,x*y)
+                    vec3_new = self.linear2(F.relu(self.linear1(vec3)))
+
+            vec4 = (vec1_new+vec2_new+vec3_new)/3
+
+            vec4 = self.linear4(F.relu(self.linear3(vec4)))
+
+
+
+
+
+
+        
+        
 
 
 # In[ ]:
