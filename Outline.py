@@ -27,11 +27,11 @@ class Net(nn.module):
         out1,out2 = self.Mesh1(y,z,neighbour_index)
         out3,out4 = self.Mesh2(out1,out2,neighbour_index)
         
-        out5 = np.append(out3,out4)
+        out5 = torch.cat((out3,out4),0)
         out5 = self.mlp1(out5)
         
-        out6 = np.append(out5,out3)
-        out6 = np.append(out6,out1)
+        out6 = torch.cat((out5,out3),0)
+        out6 = torch.cat((out6,out1),0)
         
         out6 = self.mlp2(out6)
         
@@ -71,8 +71,8 @@ class structural_Des(nn.module):
     def forward(self,corner,normal,neighbour):
         x = self.frc(corner)
         z = self.kc(normal,neighbour)
-        z = np.append(normal,z)
-        x = np.append(z,x)
+        z = torch.cat((normal,z),0)
+        x = torch.cat((z,x),0)
         
         x = self.linear2(F.relu(self.linear1(x)))
         
@@ -89,35 +89,51 @@ class structural_Des(nn.module):
 class Face_Rotate_Conv(nn.module):
     def __init__(self):
         super(Face_Rotate_Conv,self).__init__()
-        self.linear1 = nn.Linear(9,32)
-        self.linear2 = nn.Linear(32,32)
+       # self.linear1 = nn.Linear(9,32)
+        #self.linear2 = nn.Linear(32,32)
         self.linear3 = nn.Linear(32,64)
         self.linear4 = nn.Linear(64,64)
+        self.conv = nn.Conv1d(1,32,6)
+
         
     def forward(self,corner):                # corner is n*9 . we take these face wise and apply an mlp on each of them individually
+        final_array = torch.zeros(n*64)
         for i in range(n):
             corner_1_i = corner[i*9:i*9+3]
             corner_2_i = corner[i*9+3:i*9+6]
             corner_3_i = corner[i*9+6:i*9+9]
 
-            for x in corner_1_i:
-                for y in corner_2_i:
-                    vec1 = np.append(vec1,x*y)
-                    vec1_new = self.linear2(F.relu(self.linear1(vec1)))
+            corner_1_2 = torch.cat((corner_1_i,corner_2_i),0)
+            corner_2_3 = torch.cat((corner_2_i,corner_3_i),0)
+            corner_3_1 = torch.cat((corner_3_i,corner_1_i),0)
 
-            for x in corner_2_i:
-                for y in corner_3_i:
-                    vec2 = np.append(vec2,x*y)
-                    vec2_new = self.linear2(F.relu(self.linear1(vec2)))
+            corner_1_2 = corner_1_2.view(1,1,6)
+            corner_2_3 = corner_2_3.view(1,1,6)
+            corner_3_1 = corner_3_1.view(1,1,6)
 
-            for x in corner_3_i:
-                for y in corner_1_i:
-                    vec3 = np.append(vec3,x*y)
-                    vec3_new = self.linear2(F.relu(self.linear1(vec3)))
+            conv1_2 = self.conv(corner_1_2)
+            conv1_2 = conv1_2.view(-1)
 
-            vec4 = (vec1_new+vec2_new+vec3_new)/3
+            conv2_3 = self.conv(corner_2_3)
+            conv2_3 = conv2_3.view(-1)
+
+            conv3_1 = self.conv(corner_3_1)
+            conv3_1 = conv3_1.view(-1)
+
+
+            vec4 = torch.mean(torch.stack([conv1_2,conv2_3,conv3_1]),dim=0)
+
 
             vec4 = self.linear4(F.relu(self.linear3(vec4)))
+            final_array[i*64:i*64+64] = vec4
+
+        return final_array
+'''
+class Kernel_Correlation(nn.module):
+    def __init__(self):
+        super(Kernel_Correlation,self).__init__()
+'''
+
 
 
 
@@ -155,9 +171,9 @@ class Combination1(nn.module):
         self.linear2 = nn.Linear(n*200,n*256)
         
     def forward(self,spatial,structural):
-        a1 = np.append(spatial,structural)    # a1 has size n*(64+131 now)
-        a1 = F.relu(linear1(a1))            #a1 has size n*200 now
-        a1 = linear2(a1)
+        a1 = torch.cat((spatial,structural),0)    # a1 has size n*(64+131 now)
+        a1 = F.relu(self.linear1(a1))            #a1 has size n*200 now
+        a1 = self.linear2(a1)
         
         return a1
         
@@ -177,7 +193,7 @@ class Aggregation1(nn.module):
         
     def forward(self,structural,neighbour):
         n = len(neighbour)//3                   #neighbour has size n*3 , structural has size n*64
-        final_array = np.zeros(n*128)
+        final_array = torch.zeros(n*128)
         for i in range(n):
             neighbours = neighbour[3*i:3*i+3] 
             a = neighbours[0]
@@ -190,9 +206,9 @@ class Aggregation1(nn.module):
             features_b = structural[b*64:b*64+64]
             features_c = structural[c*64:c*64+64]
             
-            inp_1 = np.append(features_i,features_a)
-            inp_2 = np.append(features_i,features_b)
-            inp_3 = np.append(features_i,features_c)
+            inp_1 = torch.cat((features_i,features_a),0)
+            inp_2 = torch.cat((features_i,features_b),0)
+            inp_3 = torch.cat((features_i,features_c),0)
             
             inp_1 = F.relu(self.linear1(inp_1))
             inp_1 = self.linear2(inp_1)
@@ -203,8 +219,8 @@ class Aggregation1(nn.module):
             inp_3 = F.relu(self.linear1(inp_3))
             inp_3 = self.linear2(inp_3)
             
-            max_1_2 = np.maximum(inp_1,inp_2)
-            max_1_2_3 = np.maximum(max_1_2, inp_3)
+            max_1_2 = torch.max(inp_1,inp_2)
+            max_1_2_3 = torch.max(max_1_2, inp_3)
             
             final_array[i*128:i*128+128] = max_1_2_3
         
