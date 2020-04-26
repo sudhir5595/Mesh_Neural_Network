@@ -63,7 +63,7 @@ class spatial_Des(nn.module):
 class structural_Des(nn.module):
     def __init__(self):
         super(structural_Des,self).__init__()
-        self.kc = Kernel_Correlation()
+        self.kc = Kernel_Correlation(4)
         self.frc = Face_Rotate_Conv()
         self.linear1 = nn.Linear(131,131)
         self.linear2 = nn.Linear(131,131)
@@ -128,11 +128,43 @@ class Face_Rotate_Conv(nn.module):
             final_array[i*64:i*64+64] = vec4
 
         return final_array
-'''
+
+
 class Kernel_Correlation(nn.module):
     def __init__(self):
-        super(Kernel_Correlation,self).__init__()
-'''
+        super(Kernel_Correlation,self).__init__(self,k,sigma)
+        self.learnable_kernel = nn.parameter(torch.ones((64,k,3)),requires_grad = True)
+
+
+    def forward(self,normal,neighbour):
+        final_array = torch.zeros(n*64)
+        for i in range(n):
+            neighbours = neighbour[3*i:3*i+3] 
+            a = neighbours[0]
+            b = neighbours[1]         
+            c = neighbours[2]                            # a,b,c are the three neighbour indexes
+            
+            
+            normal_i = normal[i*3:i*3+3]
+            normal_a = normal[a*3:a*3+3]
+            normal_b = normal[b*3:b*3+3]
+            normal_c = normal[c*3:c*3+3]
+
+            for m in range(64):
+                sum = 0
+                for l in range(k):
+                    x = normal_i - learnable_kernel[m,l,:]
+                    norm = torch.norm(x)
+                    sum = sum + exp(-1*norm*norm)/(2*sigma*sigma)
+
+                final_array[i*64,i*64+m] = sum/(k*4)
+
+        return final_array
+
+
+
+
+
 
 
 
