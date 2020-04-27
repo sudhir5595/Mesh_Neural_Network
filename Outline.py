@@ -45,7 +45,7 @@ class Net(nn.module):
 # In[ ]:
 
 
-class spatial_Des(nn.module):
+class spatial_Des(nn.module):                                                            #as described in the paper, this is just a multilayer perceptron
     def __init__(self):
         super(spatial_Des,self).__init__()
         self.linear1 = nn.Linear(n*3,n*64)
@@ -63,7 +63,7 @@ class spatial_Des(nn.module):
 class structural_Des(nn.module):
     def __init__(self):
         super(structural_Des,self).__init__()
-        self.kc = Kernel_Correlation(4)
+        self.kc = Kernel_Correlation(4,1)                   #the 2 arguments are k(number of vectors you want to learn for each kernel) and sigma(both are hyperparameters to be adjusted)
         self.frc = Face_Rotate_Conv()
         self.linear1 = nn.Linear(131,131)
         self.linear2 = nn.Linear(131,131)
@@ -72,7 +72,7 @@ class structural_Des(nn.module):
         x = self.frc(corner)
         z = self.kc(normal,neighbour)
         z = torch.cat((normal,z),0)
-        x = torch.cat((z,x),0)
+        x = torch.cat((z,x),0)                              #torch.cat((a1,a2),0) basically appends two tensors a1 and a2 and returs the new
         
         x = self.linear2(F.relu(self.linear1(x)))
         
@@ -96,23 +96,23 @@ class Face_Rotate_Conv(nn.module):
         self.conv = nn.Conv1d(1,32,6)
 
         
-    def forward(self,corner):                # corner is n*9 . we take these face wise and apply an mlp on each of them individually
+    def forward(self,corner):                # corner is n*9 . we take these face wise and apply 1-d convolution of 6 features out of 9 in 3 turns
         final_array = torch.zeros(n*64)
         for i in range(n):
-            corner_1_i = corner[i*9:i*9+3]
-            corner_2_i = corner[i*9+3:i*9+6]
-            corner_3_i = corner[i*9+6:i*9+9]
+            corner_1_i = corner[i*9:i*9+3]      #first corner vector
+            corner_2_i = corner[i*9+3:i*9+6]    #second
+            corner_3_i = corner[i*9+6:i*9+9]    #third
 
-            corner_1_2 = torch.cat((corner_1_i,corner_2_i),0)
-            corner_2_3 = torch.cat((corner_2_i,corner_3_i),0)
-            corner_3_1 = torch.cat((corner_3_i,corner_1_i),0)
+            corner_1_2 = torch.cat((corner_1_i,corner_2_i),0)           #appending 1st and 2nd corner
+            corner_2_3 = torch.cat((corner_2_i,corner_3_i),0)           #2nd and 3rd
+            corner_3_1 = torch.cat((corner_3_i,corner_1_i),0)           #3rd and 1st
 
-            corner_1_2 = corner_1_2.view(1,1,6)
+            corner_1_2 = corner_1_2.view(1,1,6)                         #tensor.view function reshapes the 6 length tensor to 1,1,6(batch_size,input_channels,no_of_features) . This is the format of input to be sent in conv1d.
             corner_2_3 = corner_2_3.view(1,1,6)
             corner_3_1 = corner_3_1.view(1,1,6)
 
             conv1_2 = self.conv(corner_1_2)
-            conv1_2 = conv1_2.view(-1)
+            conv1_2 = conv1_2.view(-1)                  # a 32 length feature tensor
 
             conv2_3 = self.conv(corner_2_3)
             conv2_3 = conv2_3.view(-1)
@@ -121,7 +121,7 @@ class Face_Rotate_Conv(nn.module):
             conv3_1 = conv3_1.view(-1)
 
 
-            vec4 = torch.mean(torch.stack([conv1_2,conv2_3,conv3_1]),dim=0)
+            vec4 = torch.mean(torch.stack([conv1_2,conv2_3,conv3_1]),dim=0)     #simply (conv_1_2 + conv_2_3 + conv_3_1)/3
 
 
             vec4 = self.linear4(F.relu(self.linear3(vec4)))
@@ -133,8 +133,8 @@ class Face_Rotate_Conv(nn.module):
 class Kernel_Correlation(nn.module):
     def __init__(self):
         super(Kernel_Correlation,self).__init__(self,k,sigma)
-        self.learnable_kernel = nn.parameter(torch.ones((64,k,3)),requires_grad = True)
-
+        self.learnable_kernel = nn.parameter(torch.ones((64,k,3)),requires_grad = True)         #since this matrix is learnable it is initialised by torch.ones and nn.parameter is applied.
+                                                                                                #change initialisation mode to xavier or he.        
 
     def forward(self,normal,neighbour):
         final_array = torch.zeros(n*64)
@@ -262,17 +262,89 @@ class Aggregation1(nn.module):
         return final_array_2
             
         
+
+
         
 
+class Mesh2(nn.module):
+    def __init__(self):
+        super(Mesh2,self).__init__()
+        self.aggregation2 = Aggregation2()
+        self.combination2 = Combination2()
+        
+    def forward(self,out1,out2,neighbour):
+        out3 = self.combination2(out1,out2)
+        out4 = self.aggregation2(out2,neighbour)
+        return out3,out4
+        
+    
 
-# In[1]:
+
+# In[ ]:
 
 
-'''import numpy as np
-a1 = np.array([1,2,3])
-a2 = np.array([2,3,4])
+class Combination2(nn.module):
+    def __init__(self):
+        super(Combination2,self).__init__()
+        self.linear1 = nn.Linear(n*512,n*512)
+        self.linear2 = nn.Linear(n*512,n*512)
+        
+    def forward(self,out1,out2):
+        a1 = torch.cat((out1,out2),0)    # a1 has size n*(512) now
+        a1 = F.relu(self.linear1(a1))            
+        a1 = self.linear2(a1)
+        
+        return a1
+        
+       # a1 = torch.cat((spatial,structural),dim=0)
 
-a3 = np.append(a1,a2)
-print(a3)
-'''
+
+# In[ ]:
+
+
+class Aggregation2(nn.module):
+    def __init__(self):
+        super(Aggregation2,self).__init__()
+        self.linear1 = nn.Linear(128,256)
+        self.linear2 = nn.Linear(256,128)
+        self.linear3 = nn.Linear(n*128,n*512)
+        self.linear4 = nn.Linear(n*512,n*256)
+        
+    def forward(self,structural,neighbour):
+        #n = len(neighbour)//3                   #neighbour has size n*3 , structural has size n*64
+        final_array = torch.zeros(n*128)
+        for i in range(n):
+            neighbours = neighbour[3*i:3*i+3] 
+            a = neighbours[0]
+            b = neighbours[1]         
+            c = neighbours[2]                            # a,b,c are the three neighbour indexes
+            
+            
+            features_i = structural[i*64:i*64+64]
+            features_a = structural[a*64:a*64+64]
+            features_b = structural[b*64:b*64+64]
+            features_c = structural[c*64:c*64+64]
+            
+            inp_1 = torch.cat((features_i,features_a),0)
+            inp_2 = torch.cat((features_i,features_b),0)
+            inp_3 = torch.cat((features_i,features_c),0)
+            
+            inp_1 = F.relu(self.linear1(inp_1))
+            inp_1 = self.linear2(inp_1)
+            
+            inp_2 = F.relu(self.linear1(inp_2))
+            inp_2 = self.linear2(inp_2)
+            
+            inp_3 = F.relu(self.linear1(inp_3))
+            inp_3 = self.linear2(inp_3)
+            
+            max_1_2 = torch.max(inp_1,inp_2)
+            max_1_2_3 = torch.max(max_1_2, inp_3)
+            
+            final_array[i*128:i*128+128] = max_1_2_3
+        
+        final_array_1 = F.relu(self.linear3(final_array))
+        final_array_2 = self.linear4(final_array_1)
+        
+        return final_array_2
 
