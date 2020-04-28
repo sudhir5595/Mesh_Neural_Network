@@ -2,18 +2,18 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-
-class Net(nn.module):
+n = 10
+class Net(nn.Module):
     def __init__(self,k):                                  # k is the number of output classes needed
         super(Net,self).__init__()
-        self.spatial = Spatial_Des()
-        self.structural = Structural_Des()
+        self.spatial = spatial_Des()
+        self.structural = structural_Des()
         self.Mesh1 = Mesh1()
         self.Mesh2 = Mesh2()
         self.linear1 = nn.Linear(1024,1024)
         self.linear2 = nn.Linear(1024,1024)             # mlp left to implement
         self.mlp2 = mlp2()
-        self.mlp3 = mlp3()
+        self.mlp3 = mlp3(k)
         
     
     def forward(self,x):
@@ -42,11 +42,11 @@ class Net(nn.module):
         
 
 
-class mlp2(nn.module):
+class mlp2(nn.Module):
     def __init__(self):
         super(mlp2,self).__init__()
         self.linear1 = nn.Linear(n*1792,n*1024)
-        self.linear2 = nn.linear(n*1024,n*1024)
+        self.linear2 = nn.Linear(n*1024,n*1024)
 
     def forward(self,x):
         x = self.linear2(F.relu(self.linear1))
@@ -54,7 +54,7 @@ class mlp2(nn.module):
         l = torch.max(x,0)
         return l.values
 
-class mlp3(nn.module):
+class mlp3(nn.Module):
     def __init__(self,k):
         super(mlp3,self).__init__()
         self.linear1 = nn.Linear(1024,512)
@@ -66,7 +66,7 @@ class mlp3(nn.module):
         return x
 
 
-class spatial_Des(nn.module):                                                            #as described in the paper, this is just a multilayer perceptron
+class spatial_Des(nn.Module):                                                            #as described in the paper, this is just a multilayer perceptron
     def __init__(self):
         super(spatial_Des,self).__init__()
         self.linear1 = nn.Linear(n*3,n*64)
@@ -81,10 +81,10 @@ class spatial_Des(nn.module):                                                   
 # In[ ]:
 
 
-class structural_Des(nn.module):
+class structural_Des(nn.Module):
     def __init__(self):
         super(structural_Des,self).__init__()
-        self.kc = Kernel_Correlation(4,1)                   #the 2 arguments are k(number of vectors you want to learn for each kernel) and sigma(both are hyperparameters to be adjusted)
+        self.kc = Kernel_Correlation(4)                   #the 2 arguments are k(number of vectors you want to learn for each kernel) and sigma(both are hyperparameters to be adjusted)
         self.frc = Face_Rotate_Conv()
         self.linear1 = nn.Linear(131,131)
         self.linear2 = nn.Linear(131,131)
@@ -107,7 +107,7 @@ class structural_Des(nn.module):
 
 
 
-class Face_Rotate_Conv(nn.module):
+class Face_Rotate_Conv(nn.Module):
     def __init__(self):
         super(Face_Rotate_Conv,self).__init__()
        # self.linear1 = nn.Linear(9,32)
@@ -151,13 +151,15 @@ class Face_Rotate_Conv(nn.module):
         return final_array
 
 
-class Kernel_Correlation(nn.module):
-    def __init__(self):
-        super(Kernel_Correlation,self).__init__(self,k,sigma)
-        self.learnable_kernel = nn.parameter(torch.ones((64,k,3)),requires_grad = True)         #since this matrix is learnable it is initialised by torch.ones and nn.parameter is applied.
+class Kernel_Correlation(nn.Module):
+    def __init__(self,k):
+        super(Kernel_Correlation,self).__init__()
+        self.learnable_kernel = nn.Parameter(torch.randn(64,k,3))
+        self.learnable_kernel.requires_grad = True                           #since this matrix is learnable it is initialised by torch.ones and nn.parameter is applied.
                                                                                                 #change initialisation mode to xavier or he.        
 
     def forward(self,normal,neighbour):
+        sigma = 1
         final_array = torch.zeros(n*64)
         for i in range(n):
             neighbours = neighbour[3*i:3*i+3] 
@@ -200,7 +202,7 @@ class Kernel_Correlation(nn.module):
 # In[ ]:
 
 
-class Mesh1(nn.module):
+class Mesh1(nn.Module):
     def __init__(self):
         super(Mesh1,self).__init__()
         self.aggregation1 = Aggregation1()
@@ -217,7 +219,7 @@ class Mesh1(nn.module):
 # In[ ]:
 
 
-class Combination1(nn.module):
+class Combination1(nn.Module):
     def __init__(self):
         super(Combination1,self).__init__()
         self.linear1 = nn.Linear(n*(64+131),n*200)
@@ -236,7 +238,7 @@ class Combination1(nn.module):
 # In[ ]:
 
 
-class Aggregation1(nn.module):
+class Aggregation1(nn.Module):
     def __init__(self):
         super(Aggregation1,self).__init__()
         #self.linear1 = nn.Linear(128,256)
@@ -273,7 +275,7 @@ class Aggregation1(nn.module):
 
         
 
-class Mesh2(nn.module):
+class Mesh2(nn.Module):
     def __init__(self):
         super(Mesh2,self).__init__()
         self.aggregation2 = Aggregation2()
@@ -290,7 +292,7 @@ class Mesh2(nn.module):
 # In[ ]:
 
 
-class Combination2(nn.module):
+class Combination2(nn.Module):
     def __init__(self):
         super(Combination2,self).__init__()
         self.linear1 = nn.Linear(n*512,n*512)
@@ -309,7 +311,7 @@ class Combination2(nn.module):
 # In[ ]:
 
 
-class Aggregation2(nn.module):
+class Aggregation2(nn.Module):
     def __init__(self):
         super(Aggregation2,self).__init__()
         #self.linear1 = nn.Linear(128,256)
@@ -342,3 +344,8 @@ class Aggregation2(nn.module):
         
         return final_array_2
 
+
+model = Net(5)
+for name, param in model.named_parameters():
+    if param.requires_grad:
+        print(name, param.data)
