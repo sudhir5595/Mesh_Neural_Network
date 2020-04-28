@@ -4,14 +4,14 @@ import torch.nn.functional as F
 
 
 class Net(nn.module):
-    def __init__(self):
+    def __init__(self,k):                                  # k is the number of output classes needed
         super(Net,self).__init__()
         self.spatial = Spatial_Des()
         self.structural = Structural_Des()
         self.Mesh1 = Mesh1()
         self.Mesh2 = Mesh2()
-        self.Mesh3 = Mesh3()
-        self.mlp1 = mlp1()              # mlp left to implement
+        self.linear1 = nn.Linear(1024,1024)
+        self.linear2 = nn.Linear(1024,1024)             # mlp left to implement
         self.mlp2 = mlp2()
         self.mlp3 = mlp3()
         
@@ -28,21 +28,42 @@ class Net(nn.module):
         out3,out4 = self.Mesh2(out1,out2,neighbour_index)
         
         out5 = torch.cat((out3,out4),0)
-        out5 = self.mlp1(out5)
+        out5 = self.linear2(F.relu(self.Linear1(out5)))
         
         out6 = torch.cat((out5,out3),0)
         out6 = torch.cat((out6,out1),0)
         
         out6 = self.mlp2(out6)
         
-        final_output = self.mlp3(out6)
+        final_output = self.mlp3(out6,k)
         
         return final_output
          
         
 
 
-# In[ ]:
+class mlp2(nn.module):
+    def __init__(self):
+        super(mlp2,self).__init__()
+        self.linear1 = nn.Linear(n*1792,n*1024)
+        self.linear2 = nn.linear(n*1024,n*1024)
+
+    def forward(self,x):
+        x = self.linear2(F.relu(self.linear1))
+        x = x.view(n,1024)
+        l = torch.max(x,0)
+        return l.values
+
+class mlp3(nn.module):
+    def __init__(self,k):
+        super(mlp3,self).__init__()
+        self.linear1 = nn.Linear(1024,512)
+        self.linear2 = nn.Linear(512,256)
+        self.linear3 = nn.Linear(256,k)
+
+    def forward(self,x):
+        x = self.linear3(F.relu(self.linear2(F.relu(self.linear1(x)))))
+        return x
 
 
 class spatial_Des(nn.module):                                                            #as described in the paper, this is just a multilayer perceptron
@@ -218,14 +239,14 @@ class Combination1(nn.module):
 class Aggregation1(nn.module):
     def __init__(self):
         super(Aggregation1,self).__init__()
-        self.linear1 = nn.Linear(128,256)
-        self.linear2 = nn.Linear(256,128)
-        self.linear3 = nn.Linear(n*128,n*512)
+        #self.linear1 = nn.Linear(128,256)
+        #self.linear2 = nn.Linear(256,128)
+        self.linear3 = nn.Linear(n*131,n*512)
         self.linear4 = nn.Linear(n*512,n*256)
         
     def forward(self,structural,neighbour):
-        n = len(neighbour)//3                   #neighbour has size n*3 , structural has size n*64
-        final_array = torch.zeros(n*128)
+        n = len(neighbour)//3                   #neighbour has size n*3 , structural has size n*131
+        final_array = torch.zeros(n*131)
         for i in range(n):
             neighbours = neighbour[3*i:3*i+3] 
             a = neighbours[0]
@@ -233,28 +254,14 @@ class Aggregation1(nn.module):
             c = neighbours[2]                            # a,b,c are the three neighbour indexes
             
             
-            features_i = structural[i*64:i*64+64]
-            features_a = structural[a*64:a*64+64]
-            features_b = structural[b*64:b*64+64]
-            features_c = structural[c*64:c*64+64]
+            features_i = structural[i*131:i*131+131]
+            features_a = structural[a*131:a*131+131]
+            features_b = structural[b*131:b*131+131]
+            features_c = structural[c*131:c*131+131]
             
-            inp_1 = torch.cat((features_i,features_a),0)
-            inp_2 = torch.cat((features_i,features_b),0)
-            inp_3 = torch.cat((features_i,features_c),0)
-            
-            inp_1 = F.relu(self.linear1(inp_1))
-            inp_1 = self.linear2(inp_1)
-            
-            inp_2 = F.relu(self.linear1(inp_2))
-            inp_2 = self.linear2(inp_2)
-            
-            inp_3 = F.relu(self.linear1(inp_3))
-            inp_3 = self.linear2(inp_3)
-            
-            max_1_2 = torch.max(inp_1,inp_2)
-            max_1_2_3 = torch.max(max_1_2, inp_3)
-            
-            final_array[i*128:i*128+128] = max_1_2_3
+            vec4 = torch.mean(torch.stack([features_i,features_a,features_b,features_c]),dim=0)         #implementing avg. aggregation and not concatenation
+
+            final_array[i*131:i*131+131] = vec4
         
         final_array_1 = F.relu(self.linear3(final_array))
         final_array_2 = self.linear4(final_array_1)
@@ -305,14 +312,14 @@ class Combination2(nn.module):
 class Aggregation2(nn.module):
     def __init__(self):
         super(Aggregation2,self).__init__()
-        self.linear1 = nn.Linear(128,256)
-        self.linear2 = nn.Linear(256,128)
-        self.linear3 = nn.Linear(n*128,n*512)
-        self.linear4 = nn.Linear(n*512,n*256)
+        #self.linear1 = nn.Linear(128,256)
+        #self.linear2 = nn.Linear(256,128)
+        self.linear3 = nn.Linear(n*256,n*512)
+        self.linear4 = nn.Linear(n*512,n*512)
         
-    def forward(self,structural,neighbour):
-        #n = len(neighbour)//3                   #neighbour has size n*3 , structural has size n*64
-        final_array = torch.zeros(n*128)
+    def forward(self,out2,neighbour):
+        #n = len(neighbour)//3                   #neighbour has size n*3 , out2 has size n*256
+        final_array = torch.zeros(n*256)
         for i in range(n):
             neighbours = neighbour[3*i:3*i+3] 
             a = neighbours[0]
@@ -320,28 +327,15 @@ class Aggregation2(nn.module):
             c = neighbours[2]                            # a,b,c are the three neighbour indexes
             
             
-            features_i = structural[i*64:i*64+64]
-            features_a = structural[a*64:a*64+64]
-            features_b = structural[b*64:b*64+64]
-            features_c = structural[c*64:c*64+64]
+            features_i = structural[i*256:i*256+256]
+            features_a = structural[a*256:a*256+256]
+            features_b = structural[b*256:b*256+256]
+            features_c = structural[c*256:c*256+256]
             
-            inp_1 = torch.cat((features_i,features_a),0)
-            inp_2 = torch.cat((features_i,features_b),0)
-            inp_3 = torch.cat((features_i,features_c),0)
             
-            inp_1 = F.relu(self.linear1(inp_1))
-            inp_1 = self.linear2(inp_1)
             
-            inp_2 = F.relu(self.linear1(inp_2))
-            inp_2 = self.linear2(inp_2)
-            
-            inp_3 = F.relu(self.linear1(inp_3))
-            inp_3 = self.linear2(inp_3)
-            
-            max_1_2 = torch.max(inp_1,inp_2)
-            max_1_2_3 = torch.max(max_1_2, inp_3)
-            
-            final_array[i*128:i*128+128] = max_1_2_3
+            vec4 = torch.mean(torch.stack([features_i,features_a,features_b,features_c]),dim=0)         #implementing avg. aggregation and not concatenation
+            final_array[i*256:i*256+256] = vec4
         
         final_array_1 = F.relu(self.linear3(final_array))
         final_array_2 = self.linear4(final_array_1)
