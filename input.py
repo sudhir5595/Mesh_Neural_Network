@@ -49,16 +49,19 @@ def input_stl(path):
                 #print(str(j)+'a')
                 parameters["neigh_index"][i][curr_update_index] = j
                 curr_update_index = curr_update_index + 1
+                continue
             elif ((parameters["triangles"][i][0] == parameters["tri_to_check"][j][0]).all()
                 and (parameters["triangles"][i][2] == parameters["tri_to_check"][j][2]).all()):
                 #print(str(j)+'b')
                 parameters["neigh_index"][i][curr_update_index] = j
                 curr_update_index = curr_update_index + 1
+                continue
             elif ((parameters["triangles"][i][1] == parameters["tri_to_check"][j][1]).all()
                 and (parameters["triangles"][i][2] == parameters["tri_to_check"][j][2]).all()):
                 #print(str(j)+'c')
                 parameters["neigh_index"][i][curr_update_index] = j
                 curr_update_index = curr_update_index + 1
+                continue
             
             parameters["tri_to_check"][j][[0,1,2]] = parameters["tri_to_check"][j][[2,0,1]]
             
@@ -67,16 +70,19 @@ def input_stl(path):
                 #print(str(j)+'d')
                 parameters["neigh_index"][i][curr_update_index] = j
                 curr_update_index = curr_update_index + 1
+                continue
             elif ((parameters["triangles"][i][0] == parameters["tri_to_check"][j][0]).all()
                 and (parameters["triangles"][i][2] == parameters["tri_to_check"][j][2]).all()):
                 #print(str(j)+'e')
                 parameters["neigh_index"][i][curr_update_index] = j
                 curr_update_index = curr_update_index + 1
+                continue
             elif ((parameters["triangles"][i][1] == parameters["tri_to_check"][j][1]).all()
                 and (parameters["triangles"][i][2] == parameters["tri_to_check"][j][2]).all()):
                 #print(str(j)+'f')
                 parameters["neigh_index"][i][curr_update_index] = j
                 curr_update_index = curr_update_index + 1
+                continue
                 
             parameters["tri_to_check"][j][[0,1,2]] = parameters["tri_to_check"][j][[2,0,1]]
             
@@ -85,16 +91,19 @@ def input_stl(path):
                 #print(str(j)+'g')
                 parameters["neigh_index"][i][curr_update_index] = j
                 curr_update_index = curr_update_index + 1
+                continue
             elif ((parameters["triangles"][i][0] == parameters["tri_to_check"][j][0]).all()
                 and (parameters["triangles"][i][2] == parameters["tri_to_check"][j][2]).all()):
                 #print(str(j)+'h')
                 parameters["neigh_index"][i][curr_update_index] = j
                 curr_update_index = curr_update_index + 1
+                continue
             elif ((parameters["triangles"][i][1] == parameters["tri_to_check"][j][1]).all()
                 and (parameters["triangles"][i][2] == parameters["tri_to_check"][j][2]).all()):
                 #print(str(j)+'i')
                 parameters["neigh_index"][i][curr_update_index] = j
                 curr_update_index = curr_update_index + 1
+                continue
                 
             parameters["tri_to_check"][j][[0,1,2]] = parameters["tri_to_check"][j][[1,0,2]]
             
@@ -103,16 +112,19 @@ def input_stl(path):
                 #print(str(j)+'j')
                 parameters["neigh_index"][i][curr_update_index] = j
                 curr_update_index = curr_update_index + 1
+                continue
             elif ((parameters["triangles"][i][0] == parameters["tri_to_check"][j][0]).all()
                 and (parameters["triangles"][i][2] == parameters["tri_to_check"][j][2]).all()):
                 #print(str(j)+'k')
                 parameters["neigh_index"][i][curr_update_index] = j
                 curr_update_index = curr_update_index + 1
+                continue
             elif ((parameters["triangles"][i][1] == parameters["tri_to_check"][j][1]).all()
                 and (parameters["triangles"][i][2] == parameters["tri_to_check"][j][2]).all()):
                 #print(str(j)+'l')
                 parameters["neigh_index"][i][curr_update_index] = j
                 curr_update_index = curr_update_index + 1
+                continue
                 
             parameters["tri_to_check"][j][[0,1,2]] = parameters["tri_to_check"][j][[2,0,1]]
             
@@ -121,16 +133,19 @@ def input_stl(path):
                 #print(str(j)+'m')
                 parameters["neigh_index"][i][curr_update_index] = j
                 curr_update_index = curr_update_index + 1
+                continue
             elif ((parameters["triangles"][i][0] == parameters["tri_to_check"][j][0]).all()
                 and (parameters["triangles"][i][2] == parameters["tri_to_check"][j][2]).all()):
                 #print(str(j)+'n')
                 parameters["neigh_index"][i][curr_update_index] = j
                 curr_update_index = curr_update_index + 1
+                continue
             elif ((parameters["triangles"][i][1] == parameters["tri_to_check"][j][1]).all()
                 and (parameters["triangles"][i][2] == parameters["tri_to_check"][j][2]).all()):
                 #print(str(j)+'p')
                 parameters["neigh_index"][i][curr_update_index] = j
                 curr_update_index = curr_update_index + 1
+                continue
                 
             parameters["tri_to_check"][j][[0,1,2]] = parameters["tri_to_check"][j][[2,0,1]]
             
@@ -139,16 +154,19 @@ def input_stl(path):
                 #print(str(j)+'q')
                 parameters["neigh_index"][i][curr_update_index] = j
                 curr_update_index = curr_update_index + 1
+                continue
             elif ((parameters["triangles"][i][0] == parameters["tri_to_check"][j][0]).all()
                 and (parameters["triangles"][i][2] == parameters["tri_to_check"][j][2]).all()):
                 #print(str(j)+'r')
                 parameters["neigh_index"][i][curr_update_index] = j
                 curr_update_index = curr_update_index + 1
+                continue
             elif ((parameters["triangles"][i][1] == parameters["tri_to_check"][j][1]).all()
                 and (parameters["triangles"][i][2] == parameters["tri_to_check"][j][2]).all()):
                 #print(str(j)+'s')
                 parameters["neigh_index"][i][curr_update_index] = j
                 curr_update_index = curr_update_index + 1
+                continue
              
     return parameters
 
