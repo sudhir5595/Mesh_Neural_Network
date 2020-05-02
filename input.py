@@ -167,6 +167,10 @@ def input_stl(path):
                 parameters["neigh_index"][i][curr_update_index] = j
                 curr_update_index = curr_update_index + 1
                 continue
+            
+            if curr_update_index == 3:
+                break
+            
              
     return parameters
 
