@@ -30,9 +30,9 @@ def check_and_assign(tri_arr1, tri_arr_temp, neigh_arr, i , j, curr_update_index
 def assign_neigh_index(tri_arr1, tri_arr_temp, num_tri, neigh_arr):
     
     for i in range(num_tri):
-        print()
-        print(i)
-        print()
+        #print()
+        #print(i)
+        #print()
         curr_update_index = 0
         for j in range(num_tri):
             if i == j:
