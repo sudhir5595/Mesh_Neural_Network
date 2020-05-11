@@ -27,8 +27,10 @@ def check_and_assign(tri_arr1, tri_arr_temp, neigh_arr, i , j, curr_update_index
     return curr_update_index
     
     
-def assign_neigh_index(tri_arr1, tri_arr_temp, num_tri, neigh_arr):
-    
+def assign_neigh_index(tri_arr1, num_tri, neigh_arr):
+
+    tri_arr_temp = tri_arr1
+
     for i in range(num_tri):
         #print()
         #print(i)
@@ -70,25 +72,21 @@ def input_stl(path):
     parameters = {}
     parameters["normals"] = np.array(triangular_mesh.triangle_normals)
     parameters["vertices"] = np.array(triangular_mesh.vertices)
-    num_tri = int(parameters["normals"].shape[0])
+    parameters["num_tri"] = int(parameters["normals"].shape[0])
     
-    parameters["centroids"] = np.zeros((num_tri,3))                 
-    parameters["corners"] = np.zeros((num_tri, 9))
-    parameters["neigh_index"] = np.zeros((num_tri,3))
-    parameters["triangles"] = np.zeros((num_tri, 3,3))
-    parameters["tri_to_check"] = np.zeros((num_tri, 3,3))
+    parameters["triangles"] = np.zeros((parameters["num_tri"], 3,3))
+    parameters["centroids"] = np.zeros((parameters["num_tri"],3))                 
+    parameters["corners"] = np.zeros((parameters["num_tri"], 9))
+    parameters["neigh_index"] = np.zeros((parameters["num_tri"],3)) 
     
     
-    for i in range(num_tri):
-        #triangles and tri_to_check are same
-        parameters["triangles"][i], parameters["tri_to_check"][i] = [ parameters["vertices"][3*i],
-                                                                     parameters["vertices"][3*i+1],
-                                                                     parameters["vertices"][3*i+2] ], [ parameters["vertices"][3*i],
-                                                                                                       parameters["vertices"][3*i+1],
-                                                                                                       parameters["vertices"][3*i+2] ]
+    for i in range(parameters["num_tri"]):
+
+        parameters["triangles"][i] = [ parameters["vertices"][3*i],
+                                      parameters["vertices"][3*i+1],
+                                      parameters["vertices"][3*i+2] ]
         #sorting vertices(rows) according to x-coordinate, then y-coordinate, then z-coordinate
         parameters["triangles"][i].view('i8,i8,i8').sort(order=['f0', 'f1', 'f2'], axis=0)
-        parameters["tri_to_check"][i].view('i8,i8,i8').sort(order=['f0', 'f1', 'f2'], axis=0)
         #centroid formula        
         parameters["centroids"][i] = ((1 / 3) * np.sum(parameters["triangles"][i], axis = 0))
         # Corner: vectors from the center point to three vertices, v1, v2, v3 are those 3 vectors
@@ -96,7 +94,7 @@ def input_stl(path):
         #initializing neighbouring indices with index of triangle itself
         parameters["neigh_index"][i] = [i,i,i] 
         
-    assign_neigh_index(parameters["triangles"], parameters["tri_to_check"], num_tri, parameters["neigh_index"])
+    assign_neigh_index(parameters["triangles"], parameters["num_tri"], parameters["neigh_index"])
         
     return parameters
 
@@ -107,7 +105,6 @@ def input_stl(path):
 #o = input_stl("/home/prathmesh/Desktop/SoC-2020/test1.stl")
 #o = input_stl("/home/prathmesh/Desktop/SoC-2020/test2.stl")
 #o = input_stl("/home/prathmesh/Desktop/SoC-2020/test3.stl")
+#o = input_stl("/home/prathmesh/Desktop/SoC-2020/a2.stl")
+#o = input_stl("/home/prathmesh/Desktop/SoC-2020/random.stl")
 #print(o["neigh_index"])
-
-
-
