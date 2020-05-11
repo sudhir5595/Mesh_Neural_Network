@@ -12,15 +12,15 @@ def common_side(tri1, tri2, row1, row2):
 def check_and_assign(tri_arr1, tri_arr_temp, neigh_arr, i , j, curr_update_index):
     
     if common_side(tri_arr1[i], tri_arr_temp[j], 0, 1):
-        print(str(j))
+        #print(str(j))
         neigh_arr[i][curr_update_index] = j
         curr_update_index = curr_update_index + 1
     elif common_side(tri_arr1[i], tri_arr_temp[j], 0, 2):
-        print(str(j))
+        #print(str(j))
         neigh_arr[i][curr_update_index] = j
         curr_update_index = curr_update_index + 1
     elif common_side(tri_arr1[i], tri_arr_temp[j], 1, 2):
-        print(str(j))
+        #print(str(j))
         neigh_arr[i][curr_update_index] = j
         curr_update_index = curr_update_index + 1
     
