@@ -107,7 +107,7 @@ def input_stl(path):
 
 #o = input_stl("/home/prathmesh/Desktop/SoC-2020/copy_cube.stl")
 #o = input_stl("/home/prathmesh/Desktop/SoC-2020/ArtecSpiderNerfGunmm.stl")
-o = input_stl("test0.stl")
+o = input_stl("../../testdit/bed/train/bed_0003.stl")
 print(o["neigh_index"].shape)
 #o = input_stl("/home/prathmesh/Desktop/SoC-2020/test1.stl")
 #o = input_stl("/home/prathmesh/Desktop/SoC-2020/test2.stl")

@@ -5,7 +5,7 @@ import torch.optim as optim
 
 
 from Outline import Net
-model = Net(5)
+model = Net(10)  				#10 classes
 
 criterion = nn.CrossEntropyLoss()
 optimizer = optim.SGD(model.parameters(),lr = 0.001,momentum = 0.9)

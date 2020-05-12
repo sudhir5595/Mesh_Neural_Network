@@ -17,11 +17,12 @@ class Net(nn.Module):
         
     
     def forward(self,x):
-       # center = x[:,3]
-       # corner = x[:,3:12]
-       # normal = x[:,12:15]
-       # neighbour_index = x[:,15:18]                  #ignore this,will fix this once i get the data format
+        center = x[:,3]
+        corner = x[:,3:12]
+        normal = x[:,12:15]
+        neighbour_index = x[:,15:18]                  #ignore this,will fix this once i get the data format
         
+
         y = self.spatial(center)
         z = self.structural(corner,normal,neighbour_index)
         out1,out2 = self.Mesh1(y,z,neighbour_index)
