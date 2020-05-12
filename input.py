@@ -12,12 +12,6 @@ def common_side(tri1, tri2, row1, row2):
 def check_and_assign(tri_arr1, tri_arr_temp, neigh_arr, i , j, curr_update_index):
     
     if common_side(tri_arr1[i], tri_arr_temp[j], 0, 1):
-
-       # print(str(j))
-        neigh_arr[i][curr_update_index] = j
-        curr_update_index = curr_update_index + 1
-    elif common_side(tri_arr1[i], tri_arr_temp[j], 0, 2):
-       # print(str(j))
         #print(str(j))
         neigh_arr[i][curr_update_index] = j
         curr_update_index = curr_update_index + 1
@@ -34,9 +28,7 @@ def check_and_assign(tri_arr1, tri_arr_temp, neigh_arr, i , j, curr_update_index
     
     
 def assign_neigh_index(tri_arr1, num_tri, neigh_arr):
-
     tri_arr_temp = tri_arr1
-
     for i in range(num_tri):
         #print()
         #print(i)
@@ -107,11 +99,10 @@ def input_stl(path):
 
 #o = input_stl("/home/prathmesh/Desktop/SoC-2020/copy_cube.stl")
 #o = input_stl("/home/prathmesh/Desktop/SoC-2020/ArtecSpiderNerfGunmm.stl")
-o = input_stl("../../testdit/bed/train/bed_0003.stl")
-print(o["neigh_index"].shape)
+#o = input_stl("/home/prathmesh/Desktop/SoC-2020/test0.stl")
 #o = input_stl("/home/prathmesh/Desktop/SoC-2020/test1.stl")
 #o = input_stl("/home/prathmesh/Desktop/SoC-2020/test2.stl")
 #o = input_stl("/home/prathmesh/Desktop/SoC-2020/test3.stl")
 #o = input_stl("/home/prathmesh/Desktop/SoC-2020/a2.stl")
 #o = input_stl("/home/prathmesh/Desktop/SoC-2020/random.stl")
-#print(o["neigh_index"])
+
