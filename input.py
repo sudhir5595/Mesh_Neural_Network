@@ -1,6 +1,5 @@
 import numpy as np
 import open3d as o3d
-import time
 
 def switch_rows(parameter, perm):
     parameter[[0,1,2]] = parameter[perm]
