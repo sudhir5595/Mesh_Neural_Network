@@ -4,60 +4,46 @@ import open3d as o3d
 def switch_rows(parameter, perm):
     parameter[[0,1,2]] = parameter[perm]
 
+
 def common_side(tri1, tri2, row1, row2):
     bool_val = ((tri1[row1] == tri2[row1]).all()
                 and (tri1[row2] == tri2[row2]).all())
     return bool_val    
 
+
 def check_and_assign(tri_arr1, tri_arr_temp, neigh_arr, i , j, curr_update_index):
     
     if common_side(tri_arr1[i], tri_arr_temp[j], 0, 1):
-        #print(str(j))
         neigh_arr[i][curr_update_index] = j
         curr_update_index = curr_update_index + 1
     elif common_side(tri_arr1[i], tri_arr_temp[j], 0, 2):
-        #print(str(j))
         neigh_arr[i][curr_update_index] = j
         curr_update_index = curr_update_index + 1
     elif common_side(tri_arr1[i], tri_arr_temp[j], 1, 2):
-        #print(str(j))
         neigh_arr[i][curr_update_index] = j
         curr_update_index = curr_update_index + 1
     
     return curr_update_index
     
-    
+
 def assign_neigh_index(tri_arr1, num_tri, neigh_arr):
     tri_arr_temp = tri_arr1
     for i in range(num_tri):
-        #print()
-        #print(i)
-        #print()
         curr_update_index = 0
         for j in range(num_tri):
             if i == j:
                 continue
             
             curr_update_index = check_and_assign(tri_arr1, tri_arr_temp, neigh_arr, i , j, curr_update_index)
-            
             switch_rows(tri_arr_temp[j], perm = [2,0,1])
-            
-            curr_update_index = check_and_assign(tri_arr1, tri_arr_temp, neigh_arr, i , j, curr_update_index)
-                
+            curr_update_index = check_and_assign(tri_arr1, tri_arr_temp, neigh_arr, i , j, curr_update_index)    
             switch_rows(tri_arr_temp[j], perm = [2,0,1])
-            
-            curr_update_index = check_and_assign(tri_arr1, tri_arr_temp, neigh_arr, i , j, curr_update_index)
-                
+            curr_update_index = check_and_assign(tri_arr1, tri_arr_temp, neigh_arr, i , j, curr_update_index)    
             switch_rows(tri_arr_temp[j], perm = [1,0,2])
-            
-            curr_update_index = check_and_assign(tri_arr1, tri_arr_temp, neigh_arr, i , j, curr_update_index)
-                
+            curr_update_index = check_and_assign(tri_arr1, tri_arr_temp, neigh_arr, i , j, curr_update_index)   
             switch_rows(tri_arr_temp[j], perm = [2,0,1])
-            
-            curr_update_index = check_and_assign(tri_arr1, tri_arr_temp, neigh_arr, i , j, curr_update_index)
-                
+            curr_update_index = check_and_assign(tri_arr1, tri_arr_temp, neigh_arr, i , j, curr_update_index)   
             switch_rows(tri_arr_temp[j], perm = [2,0,1])
-            
             curr_update_index = check_and_assign(tri_arr1, tri_arr_temp, neigh_arr, i , j, curr_update_index)
             
             if curr_update_index == 3:
@@ -95,14 +81,3 @@ def input_stl(path):
     assign_neigh_index(parameters["triangles"], parameters["num_tri"], parameters["neigh_index"])
         
     return parameters
-
-
-#o = input_stl("/home/prathmesh/Desktop/SoC-2020/copy_cube.stl")
-#o = input_stl("/home/prathmesh/Desktop/SoC-2020/ArtecSpiderNerfGunmm.stl")
-#o = input_stl("/home/prathmesh/Desktop/SoC-2020/test0.stl")
-#o = input_stl("/home/prathmesh/Desktop/SoC-2020/test1.stl")
-#o = input_stl("/home/prathmesh/Desktop/SoC-2020/test2.stl")
-#o = input_stl("/home/prathmesh/Desktop/SoC-2020/test3.stl")
-#o = input_stl("/home/prathmesh/Desktop/SoC-2020/a2.stl")
-#o = input_stl("/home/prathmesh/Desktop/SoC-2020/random.stl")
-
