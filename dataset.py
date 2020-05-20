@@ -31,7 +31,7 @@ class MeshData(Dataset):
 				center = dict_para["centroids"]
 				normal = dict_para["normals"]
 
-				self.X.append(np.concatenate(center,corner,normal,neigh),axis=1)
+				self.X.append(np.concatenate((center,corner,normal,neigh),axis=1))
 				self.Y.append((self.one_hot_encode(self.classes_codec,[x])))
 
 
