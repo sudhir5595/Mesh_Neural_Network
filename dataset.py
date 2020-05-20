@@ -52,5 +52,10 @@ class MeshData(Dataset):
 
 
 DataObject = Dataset('ModelNet10')
-print(DataObject[0].shape)
-print(DataObject[1].shape)
+x,y = DataObject[0]
+print(x.shape)
+print(y.shape)
+x,y = DataObject[1]
+print(x.shape)
+print(y.shape)
+#print(DataObject[1].shape)
