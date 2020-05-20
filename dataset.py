@@ -31,7 +31,7 @@ class MeshData(Dataset):
 				center = dict_para["centroids"]
 				normal = dict_para["normals"]
 
-				self.X.append((center,corner,normal,neigh))
+				self.X.append(np.concatenate(center,corner,normal,neigh),axis=1)
 				self.Y.append((self.one_hot_encode(self.classes_codec,[x])))
 
 
@@ -47,8 +47,10 @@ class MeshData(Dataset):
 		return len(final_dataset)
 
 	def __getitem__(self,idx):
-		return torch.tensor(final_dataset[idx])
+		return torch.from_numpy(self.X[idx]),self.Y[idx]
 
 
 
-DataObject = MeshData('ModelNet10')
+DataObject = Dataset('ModelNet10')
+print(DataObject[0].shape)
+print(DataObject[1].shape)

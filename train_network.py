@@ -10,10 +10,13 @@ model = Net(10)  				#10 classes
 criterion = nn.CrossEntropyLoss()
 optimizer = optim.SGD(model.parameters(),lr = 0.001,momentum = 0.9)
 
+from dataset import MeshData
+DataObject = MeshData('ModelNet10')
 
-for epochs in range(10):
-	for i,data in enumerate(dataset,0):
-		x,y = data
+max_epochs = 100
+for epochs in range(max_epochs):
+	for i in range(len(DataObject)):
+		x,y = DataObject[i]
 		optimizer.zero_grad()
 		yhat = model(x)
 		loss = criterion(y,yhat)
