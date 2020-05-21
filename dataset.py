@@ -53,7 +53,7 @@ class MeshData(Dataset):
 
 
 
-DataObject = Dataset('ModelNet10')
+DataObject = MeshData('ModelNet10')
 x,y = DataObject[0]
 print(x.shape)
 print(y)
