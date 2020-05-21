@@ -5,7 +5,7 @@ from math import exp
 from pytorch_model_summary import summary
 
 
-n = 10
+#n = 10
 class Net(nn.Module):
     def __init__(self,k):                                  # k is the number of output classes needed
         super(Net,self).__init__()
@@ -20,9 +20,9 @@ class Net(nn.Module):
         
     
     def forward(self,x):
-    #    n = 
+        n = x.size()[0] 
         center = x[:,0:3]
-        print(center.shape)
+       # print(center.shape)
         corner = x[:,3:12]
         normal = x[:,12:15]
         neighbour_index = x[:,15:18]                  
@@ -30,18 +30,18 @@ class Net(nn.Module):
         y = self.spatial(center)
         z = self.structural(corner,normal,neighbour_index)
         out1,out2 = self.Mesh1(y,z,neighbour_index)
-        print(out1.shape)
-        print(out2.shape)
+        #print(out1.shape)
+        #print(out2.shape)
         out3,out4 = self.Mesh2(out1,out2,neighbour_index)
         
         out5 = torch.cat((out3,out4),dim=1)
-        print(out5.shape)
+        #print(out5.shape)
         out5 = out5.view(n,1024,1)
         out5 = self.conv1(out5)
         out5 = out5.view(n,1024)
         
         out6 = torch.cat((out5,out3,out1),dim=1)
-        print(out6.shape)
+        #print(out6.shape)
         
         out6 = self.mlp2(out6)
         
@@ -58,6 +58,7 @@ class mlp2(nn.Module):
         self.conv1 = nn.Conv1d(1792,1024,1)
 
     def forward(self,x):
+        n = x.size()[0]
         x = x.view(n,1792,1)
         x = self.conv1(x)
         x = x.view(n,1024)
@@ -76,7 +77,7 @@ class mlp3(nn.Module):
         x = F.relu(self.linear1(x))
         x = F.relu(self.dropout(self.linear2(x)))
         x = self.linear3(x)
-        print(x.shape)
+        #print(x.shape)
         return F.softmax(x).unsqueeze(dim=0)
 
 
@@ -89,6 +90,7 @@ class spatial_Des(nn.Module):                                                   
         
         
     def forward(self,x):
+        n = x.size()[0]
         x = x.view(n,3,1)
         x = F.relu(self.bn1(self.conv1(x)))
         x = self.conv2(x)
@@ -107,6 +109,7 @@ class structural_Des(nn.Module):
         self.bn1 = nn.BatchNorm1d(131)
         
     def forward(self,corner,normal,neighbour):
+        n = corner.size()[0]
         x = self.frc(corner)
         z = self.kc(normal,neighbour)
 
@@ -127,11 +130,12 @@ class Face_Rotate_Conv(nn.Module):
         super(Face_Rotate_Conv,self).__init__()
         self.linear3 = nn.Linear(32,64)
         self.linear4 = nn.Linear(64,64)
-        self.conv = nn.Conv1d(1,32,6)
+        self.conv = nn.Conv1d(1,32,6,3)
 
         
     def forward(self,corner):                # corner is (n,9) . we take these face wise and apply 1-d convolution of 6 features out of 9 in 3 turns
-        
+        n = corner.size()[0]
+        """
         final_array = torch.zeros(n,64)
         for i in range(n):
             corner_1_i = corner[i,0:3]      #first corner vector
@@ -161,8 +165,20 @@ class Face_Rotate_Conv(nn.Module):
 
             vec4 = self.linear4(F.relu(self.linear3(vec4)))
             final_array[i,:] = vec4
+        """
+        #final_array = torch.zeros(n,6,3)
+        final_array = torch.cat((corner[:,0:3],corner[:,3:6],corner[:,6:9],corner[:,0:3]),dim=1)
+        #final_array[:,:,1] = torch.cat((corner[:,3:6],corner[:,6:9]),dim=1)
+        #final_array[:,:,2] = torch.cat((corner[:,6:9],corner[:,0:3]),dim=1)
+        final_array = final_array.view(n,1,12)
+        final_array = self.conv(final_array)
+        print(final_array.shape)
 
-        return final_array
+        new_arr = torch.mean(final_array,dim=2)
+        vec4 = self.linear4(F.relu(self.linear3(new_arr)))
+
+
+        return vec4
 
 
 class Kernel_Correlation(nn.Module):
@@ -175,6 +191,7 @@ class Kernel_Correlation(nn.Module):
 
     def forward(self,normal,neighbour):
         sigma = 1
+        n = normal.size()[0]
         final_array = torch.zeros(n,64)
         for i in range(n):
             neighbours = neighbour[i,:] 
@@ -182,9 +199,9 @@ class Kernel_Correlation(nn.Module):
             b = int(neighbours[1].item())         
             c = int(neighbours[2].item())                            # a,b,c are the three neighbour indexes
             
-            print(i)
-            print(a,b,c)
-            print(normal.shape)
+            #print(i)
+            #print(a,b,c)
+            #print(normal.shape)
             
             normal_i = normal[i,:]
             normal_a = normal[a,:]
@@ -226,6 +243,7 @@ class Combination1(nn.Module):
         
         
     def forward(self,spatial,structural):
+        n = structural.size()[0]
         a1 = torch.cat((spatial,structural),dim=1)    # a1 has size (n,64+131) now
         a1 = a1.view(n,131+64,1)
         a1 = self.conv1(a1)
@@ -243,8 +261,10 @@ class Aggregation1(nn.Module):
 
         
     def forward(self,structural,neighbour):
-        #n = len(neighbour)//3                   #neighbour has size n,3 , structural has size n,131
+        n = structural.size()[0]
+        """                   #neighbour has size n,3 , structural has size n,131
         final_array = torch.zeros(n,131)
+        
         for i in range(n):
             neighbours = neighbour[i,:] 
             a = int(neighbours[0].item())
@@ -261,6 +281,18 @@ class Aggregation1(nn.Module):
 
             final_array[i,:] = vec4
         
+        final_array = final_array.view(n,131,1)
+        final_array_1 = self.conv1(final_array)
+
+        final_array_2 = final_array_1.view(n,256)
+        """
+        neighbour = neighbour.long()
+        first_neigh = structural[neighbour[:,0]]
+        second_neigh = structural[neighbour[:,1]]
+        third_neigh = structural[neighbour[:,2]]
+
+        final_array = torch.mean(torch.stack([structural,first_neigh,second_neigh,third_neigh]),dim=0)
+
         final_array = final_array.view(n,131,1)
         final_array_1 = self.conv1(final_array)
 
@@ -293,8 +325,9 @@ class Combination2(nn.Module):
         self.conv1 = nn.Conv1d(512,512,1)
         
     def forward(self,out1,out2):
-        print(out1.shape)
-        print(out2.shape)
+        n = out1.size()[0]
+        #print(out1.shape)
+        #print(out2.shape)
         a1 = torch.cat((out1,out2),dim=1)       # a1 has size n,512 now
         a1 = a1.view(n,512,1)    
         a1 = self.conv1(a1)
@@ -310,7 +343,8 @@ class Aggregation2(nn.Module):
         self.conv1 = nn.Conv1d(256,512,1)
         
     def forward(self,out2,neighbour):
-        #n = len(neighbour)//3                  
+        n = neighbour.size()[0]
+        """                  
         final_array = torch.zeros(n,256)
         for i in range(n):
             neighbours = neighbour[i,:] 
@@ -333,12 +367,25 @@ class Aggregation2(nn.Module):
         final_array_1 = self.conv1(final_array)
 
         final_array_2 = final_array_1.view(n,512)
+        """
 
+        neighbour = neighbour.long()
+        first_neigh = out2[neighbour[:,0]]
+        second_neigh = out2[neighbour[:,1]]
+        third_neigh = out2[neighbour[:,2]]
+
+        final_array = torch.mean(torch.stack([out2,first_neigh,second_neigh,third_neigh]),dim=0)
+
+        final_array = final_array.view(n,256,1)
+        final_array_1 = self.conv1(final_array)
+
+        final_array_2 = final_array_1.view(n,512)
         return final_array_2
+        
 
 
-#model = Net(5)
+model = Net(5)
 
-#inp = torch.ones(n,18)
-
-#print(summary(model,inp))
+inp = torch.ones(100,18)
+print(model(inp))
+print(summary(model,inp))
