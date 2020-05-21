@@ -76,7 +76,7 @@ class mlp3(nn.Module):
         x = F.relu(self.dropout(self.linear2(x)))
         x = self.linear3(x)
         print(x.shape)
-        return F.softmax(x)
+        return F.softmax(x).unsqueeze(dim=0)
 
 
 class spatial_Des(nn.Module):                                                            #as described in the paper, this is just a multilayer perceptron
@@ -336,8 +336,8 @@ class Aggregation2(nn.Module):
         return final_array_2
 
 
-model = Net(5)
+#model = Net(5)
 
-inp = torch.ones(n,18)
+#inp = torch.ones(n,18)
 
-print(summary(model,inp))
+#print(summary(model,inp))

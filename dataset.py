@@ -39,7 +39,8 @@ class MeshData(Dataset):
 
 	def one_hot_encode(self,codec,values):
 		value_idxs = codec.transform(values)
-		return torch.eye(len(codec.classes_))[value_idxs]
+		val,idx = torch.max(torch.eye(len(codec.classes_))[value_idxs],1)
+		return idx
 
 
 
@@ -54,8 +55,8 @@ class MeshData(Dataset):
 DataObject = Dataset('ModelNet10')
 x,y = DataObject[0]
 print(x.shape)
-print(y.shape)
+print(y)
 x,y = DataObject[1]
 print(x.shape)
-print(y.shape)
+print(y)
 #print(DataObject[1].shape)
