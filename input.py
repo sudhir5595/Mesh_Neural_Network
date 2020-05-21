@@ -64,7 +64,3 @@ def input_stl(path):
     #parameters["neigh_index"].sort(axis = 1)
 
     return parameters
-
-path = '/home/prathmesh/Desktop/SoC-2020/test1.stl'
-o = input_stl(path)
-print(o['corners'][15])
