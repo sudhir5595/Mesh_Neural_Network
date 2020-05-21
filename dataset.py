@@ -1,3 +1,4 @@
+import numpy as np
 import torch
 import os
 from torch.utils.data import Dataset
@@ -59,4 +60,7 @@ print(y)
 x,y = DataObject[1]
 print(x.shape)
 print(y)
+#print(DataObject[1].shape)
+
+print(y.shape)
 #print(DataObject[1].shape)
