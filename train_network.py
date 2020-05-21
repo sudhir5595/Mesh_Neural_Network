@@ -13,7 +13,7 @@ optimizer = optim.SGD(model.parameters(),lr = 0.001,momentum = 0.9)
 from dataset import MeshData
 DataObject = MeshData('ModelNet10')
 
-max_epochs = 100
+max_epochs = 30
 for epochs in range(max_epochs):
 	for i in range(len(DataObject)):
 		x,y = DataObject[i]
