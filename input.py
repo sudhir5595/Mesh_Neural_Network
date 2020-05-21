@@ -44,6 +44,8 @@ def input_stl(path):
         c2 = parameters["vertices"][v2] - parameters["centroids"][i]
         c3 = parameters["vertices"][v3] - parameters["centroids"][i]
 
+        parameters['corners'][i] = np.concatenate((c1, c2, c3))
+
         faces_contain_this_vertex[v1].add(i)
         faces_contain_this_vertex[v2].add(i)
         faces_contain_this_vertex[v3].add(i)
@@ -63,6 +65,6 @@ def input_stl(path):
 
     return parameters
 
-#path = '/home/prathmesh/Desktop/SoC-2020/test1.stl'
-#o = input_stl(path)
-#print(o)
+path = '/home/prathmesh/Desktop/SoC-2020/test1.stl'
+o = input_stl(path)
+print(o['corners'][15])
