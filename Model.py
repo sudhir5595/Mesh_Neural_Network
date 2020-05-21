@@ -81,7 +81,7 @@ class mlp3(nn.Module):
         x = F.relu(self.dropout(self.linear2(x)))
         x = self.linear3(x)
         #print(x.shape)
-        return F.softmax(x).unsqueeze(dim=0)
+        return x.unsqueeze(dim=0)
 
 
 class spatial_Des(nn.Module):                                                            #as described in the paper, this is just a multilayer perceptron
@@ -181,7 +181,7 @@ class Face_Rotate_Conv(nn.Module):
         #final_array[:,:,2] = torch.cat((corner[:,6:9],corner[:,0:3]),dim=1)
         final_array = final_array.view(n,1,12)
         final_array = self.conv(final_array)
-        print(final_array.shape)
+        #print(final_array.shape)
 
         new_arr = torch.mean(final_array,dim=2)
         vec4 = self.linear4(F.relu(self.linear3(new_arr)))

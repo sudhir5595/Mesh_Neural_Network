@@ -4,7 +4,7 @@ import torch.nn.Functional as F
 import torch.optim as optim
 
 
-from Outline import Net
+from Model import Net
 model = Net(10)  				#10 classes
 
 criterion = nn.CrossEntropyLoss()
