@@ -13,7 +13,8 @@ class Net(nn.Module):
         self.structural = structural_Des()
         self.Mesh1 = Mesh1()
         self.Mesh2 = Mesh2()
-        self.conv1 = nn.Conv1d(1024,1024,1)           
+        self.conv1 = nn.Conv1d(1024,1024,1)
+        self.linear = nn.Linear(1024,1024)           
         self.mlp2 = mlp2()
         self.mlp3 = mlp3(k)
         self.k = k
@@ -36,9 +37,9 @@ class Net(nn.Module):
         
         out5 = torch.cat((out3,out4),dim=1)
         #print(out5.shape)
-        out5 = out5.view(n,1024,1)
-        out5 = self.conv1(out5)
-        out5 = out5.view(n,1024)
+        #out5 = out5.view(n,1024,1)
+        out5 = self.linear(out5)
+        #out5 = out5.view(n,1024)
         
         out6 = torch.cat((out5,out3,out1),dim=1)
         #print(out6.shape)
@@ -55,13 +56,15 @@ class Net(nn.Module):
 class mlp2(nn.Module):
     def __init__(self):
         super(mlp2,self).__init__()
-        self.conv1 = nn.Conv1d(1792,1024,1)
+        #self.conv1 = nn.Conv1d(1792,1024,1)
+        self.linear = nn.Linear(1792,1024)
 
     def forward(self,x):
         n = x.size()[0]
-        x = x.view(n,1792,1)
-        x = self.conv1(x)
-        x = x.view(n,1024)
+        #x = x.view(n,1792,1)
+        #x = self.conv1(x)
+        #x = x.view(n,1024)
+        x = self.linear(x)
         l = torch.max(x,0)
         return l.values
 
@@ -84,17 +87,20 @@ class mlp3(nn.Module):
 class spatial_Des(nn.Module):                                                            #as described in the paper, this is just a multilayer perceptron
     def __init__(self):
         super(spatial_Des,self).__init__()
-        self.conv1 = nn.Conv1d(3,64,1)
-        self.conv2 = nn.Conv1d(64,64,1)
-        self.bn1 = nn.BatchNorm1d(64)
+        #self.conv1 = nn.Conv1d(3,64,1)
+        #self.conv2 = nn.Conv1d(64,64,1)
+        self.linear1 = nn.Linear(64,64)
+        self.linear2 = nn.Linear(3,64)
+        #self.bn1 = nn.BatchNorm1d(64)
         
         
     def forward(self,x):
         n = x.size()[0]
-        x = x.view(n,3,1)
-        x = F.relu(self.bn1(self.conv1(x)))
-        x = self.conv2(x)
-        x = x.view(n,64)
+        #x = x.view(n,3,1)
+        #x = F.relu(self.bn1(self.conv1(x)))
+        #x = self.conv2(x)
+        x = self.linear1(F.relu(self.linear2(x)))
+        #x = x.view(n,64)
         return x
 
 
@@ -106,6 +112,8 @@ class structural_Des(nn.Module):
         self.frc = Face_Rotate_Conv()
         self.conv1 = nn.Conv1d(131,131,1)
         self.conv2 = nn.Conv1d(131,131,1)
+        #self.linear1 = nn.Linear(131,131)
+        #self.linear2 = nn.Linear(131,131)
         self.bn1 = nn.BatchNorm1d(131)
         
     def forward(self,corner,normal,neighbour):
@@ -116,6 +124,7 @@ class structural_Des(nn.Module):
         x = torch.cat((normal,x,z),dim=1)        
         x = x.view(n,131,1)
         x = self.conv2(F.relu(self.bn1(self.conv1(x))))
+        #x = self.linear2(F.relu(self.linear1(x)))
         x = x.view(n,131)
 
         return x
@@ -184,10 +193,10 @@ class Face_Rotate_Conv(nn.Module):
 class Kernel_Correlation(nn.Module):
     def __init__(self,k):
         super(Kernel_Correlation,self).__init__()
-        self.learnable_kernel = nn.Parameter(torch.randn(64,k,3))
+        self.learnable_kernel = nn.Parameter(torch.empty(64,k,3))
         self.learnable_kernel.requires_grad = True                           #since this matrix is learnable it is initialised by torch.ones and nn.parameter is applied.
         self.k = k
-                                                                                                #change initialisation mode to xavier or he.        
+        nn.init.xavier_uniform_(self.learnable_kernel, gain=nn.init.calculate_gain('relu'))                                                                                        #change initialisation mode to xavier or he.        
 
     def forward(self,normal,neighbour):
         sigma = 1
@@ -384,8 +393,8 @@ class Aggregation2(nn.Module):
         
 
 
-model = Net(5)
+#model = Net(5)
 
-inp = torch.ones(100,18)
-print(model(inp))
-print(summary(model,inp))
+#inp = torch.ones(316,18)
+#print(model(inp))
+#print(summary(model,inp))
