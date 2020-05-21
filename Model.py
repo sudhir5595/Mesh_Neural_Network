@@ -13,7 +13,7 @@ class Net(nn.Module):
         self.structural = structural_Des()
         self.Mesh1 = Mesh1()
         self.Mesh2 = Mesh2()
-        self.conv1 = nn.Conv1d(1024,1024,1)
+        #self.conv1 = nn.Conv1d(1024,1024,1)
         self.linear = nn.Linear(1024,1024)           
         self.mlp2 = mlp2()
         self.mlp3 = mlp3(k)
