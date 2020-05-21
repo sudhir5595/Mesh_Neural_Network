@@ -20,6 +20,7 @@ class Net(nn.Module):
         
     
     def forward(self,x):
+    #    n = 
         center = x[:,0:3]
         print(center.shape)
         corner = x[:,3:12]

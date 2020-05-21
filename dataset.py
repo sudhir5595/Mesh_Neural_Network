@@ -41,7 +41,7 @@ class MeshData(Dataset):
 	def one_hot_encode(self,codec,values):
 		value_idxs = codec.transform(values)
 		val,idx = torch.max(torch.eye(len(codec.classes_))[value_idxs],1)
-		return idx
+		return torch.LongTensor(idx)
 
 
 
