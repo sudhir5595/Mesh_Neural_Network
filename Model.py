@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from math import exp
 from pytorch_model_summary import summary
-
+import numpy as np
 
 #n = 10
 class Net(nn.Module):
@@ -193,14 +193,37 @@ class Face_Rotate_Conv(nn.Module):
 class Kernel_Correlation(nn.Module):
     def __init__(self,k):
         super(Kernel_Correlation,self).__init__()
-        self.learnable_kernel = nn.Parameter(torch.empty(64,k,3))
-        self.learnable_kernel.requires_grad = True                           #since this matrix is learnable it is initialised by torch.ones and nn.parameter is applied.
+        self.theta_par = nn.Parameter(torch.rand(1,64, 4) * np.pi)
+        self.phi_par = nn.Parameter(torch.rand(1,64, 4) *2* np.pi)
+        #self.learnable_kernel = nn.Parameter(torch.empty(64,k,3))
+        #self.learnable_kernel.requires_grad = True                           #since this matrix is learnable it is initialised by torch.ones and nn.parameter is applied.
         self.k = k
-        nn.init.xavier_uniform_(self.learnable_kernel, gain=nn.init.calculate_gain('relu'))                                                                                        #change initialisation mode to xavier or he.        
+        #nn.init.xavier_uniform_(self.learnable_kernel, gain=nn.init.calculate_gain('relu'))                                                                                        #change initialisation mode to xavier or he.        
 
     def forward(self,normal,neighbour):
-        sigma = 1
+        sigma = 0.2
         n = normal.size()[0]
+        neighbour = neighbour.long()
+        normal_neigh1 = normal[neighbour[:,0]]
+        normal_neigh2 = normal[neighbour[:,1]]
+        normal_neigh3 = normal[neighbour[:,2]]
+
+        face_normal = normal.unsqueeze(2).expand(-1,-1,64).unsqueeze(3)
+        normal_neigh1 = normal_neigh1.unsqueeze(2).expand(-1,-1,64).unsqueeze(3)
+        normal_neigh2 = normal_neigh2.unsqueeze(2).expand(-1,-1,64).unsqueeze(3)
+        normal_neigh3 = normal_neigh3.unsqueeze(2).expand(-1,-1,64).unsqueeze(3)
+
+        fea = torch.cat((face_normal,normal_neigh1,normal_neigh2,normal_neigh3),dim=3)
+        fea = fea.unsqueeze(4).expand(-1,-1,-1,-1,4)
+
+        kernel = torch.cat((torch.sin(self.theta_par)*torch.sin(self.phi_par) , torch.sin(self.theta_par)*torch.cos(self.phi_par) , torch.cos(self.theta_par)) ,dim=0 )
+        kernel = kernel.unsqueeze(0).expand(n,-1,-1,-1)
+        kernel = kernel.unsqueeze(3).expand(-1,-1,-1,4,-1)
+
+        correl = torch.sum((fea - kernel)**2,1)
+
+        fea = torch.sum(torch.sum(np.e**(correl / (-2*sigma**2)), 3), 2) / 16
+        """
         final_array = torch.zeros(n,64)
         for i in range(n):
             neighbours = neighbour[i,:] 
@@ -225,8 +248,8 @@ class Kernel_Correlation(nn.Module):
                     sum = sum + exp(-1*norm*norm)/(2*sigma*sigma)
 
                 final_array[i,m] = sum/(self.k*4)
-
-        return final_array
+        """
+        return fea
 
 
 
