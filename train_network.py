@@ -17,6 +17,8 @@ max_epochs = 30
 for epochs in range(max_epochs):
 	for i in range(len(DataObject.X)):
 		x,y = DataObject[i]
+		x = x.float()
+		y = y.float()
 		optimizer.zero_grad()
 		yhat = model(x)
 		loss = criterion(y,yhat)

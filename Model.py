@@ -74,11 +74,11 @@ class mlp3(nn.Module):
         self.linear1 = nn.Linear(1024,512)
         self.linear2 = nn.Linear(512,256)
         self.linear3 = nn.Linear(256,k)
-        self.dropout = nn.Dropout(p=0.3)
+        self.dropout = nn.Dropout(p=0.4)
 
     def forward(self,x):
-        x = F.relu(self.linear1(x))
-        x = F.relu(self.dropout(self.linear2(x)))
+        x = self.dropout(F.relu(self.linear1(x)))
+        x = self.dropout(F.relu(self.linear2(x)))
         x = self.linear3(x)
         #print(x.shape)
         return x.unsqueeze(dim=0)
@@ -395,6 +395,6 @@ class Aggregation2(nn.Module):
 
 #model = Net(5)
 
-#inp = torch.ones(316,18)
+#inp = torch.randn(316,18)
 #print(model(inp))
 #print(summary(model,inp))
