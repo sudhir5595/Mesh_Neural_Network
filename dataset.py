@@ -21,19 +21,23 @@ class MeshData(Dataset):
 
 		for x in lst_of_classes:
 			
-			path = root_dir + '/' + x + '/train/'
+			path = root_dir + '/' + x + '/train'
 			lst_of_objects = os.listdir(path)
 			for y in lst_of_objects:
 				file_path = path + '/' + y
-
+				
 				dict_para = input_stl(file_path)
-				neigh = dict_para["neigh_index"]
-				corner = dict_para["corners"]
-				center = dict_para["centroids"]
-				normal = dict_para["normals"]
+				if dict_para == False:
+					print('Input file',y,'has problems')
+					continue
+				else:	
+					neigh = dict_para["neigh_index"]
+					corner = dict_para["corners"]
+					center = dict_para["centroids"]
+					normal = dict_para["normals"]
 
-				self.X.append(np.concatenate((center,corner,normal,neigh),axis=1))
-				self.Y.append((self.one_hot_encode(self.classes_codec,[x])))
+					self.X.append(np.concatenate((center,corner,normal,neigh),axis=1))
+					self.Y.append((self.one_hot_encode(self.classes_codec,[x])))
 
 
 		self.final_dataset = [self.X,self.Y]
@@ -52,15 +56,15 @@ class MeshData(Dataset):
 		return torch.from_numpy(self.X[idx]),self.Y[idx]
 
 
-
-DataObject = MeshData('ModelNet10')
-x,y = DataObject[0]
-print(x.shape)
-print(y)
-x,y = DataObject[1]
-print(x.shape)
-print(y)
+#DataObject = MeshData('/home/prathmesh/Desktop/SoC-2020/stl/b')
+#print(len(DataObject.final_dataset))
+#x,y = DataObject[0]
+#print(x.shape)
+#print(y)
+#x,y = DataObject[1]
+#print(x.shape)
+#print(y)
 #print(DataObject[1].shape)
 
-print(y.shape)
+#print(y.shape)
 #print(DataObject[1].shape)

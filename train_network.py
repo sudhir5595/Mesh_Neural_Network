@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-import torch.nn.Functional as F
+import torch.nn.functional as F
 import torch.optim as optim
 
 
@@ -15,7 +15,7 @@ DataObject = MeshData('ModelNet10')
 
 max_epochs = 30
 for epochs in range(max_epochs):
-	for i in range(len(DataObject)):
+	for i in range(len(DataObject.final_dataset)):
 		x,y = DataObject[i]
 		optimizer.zero_grad()
 		yhat = model(x)
