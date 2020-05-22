@@ -56,8 +56,8 @@ class MeshData(Dataset):
 		return torch.from_numpy(self.X[idx]),self.Y[idx]
 
 
-#DataObject = MeshData('/home/prathmesh/Desktop/SoC-2020/stl/b')
-#print(len(DataObject.final_dataset))
+DataObject = MeshData('/home/prathmesh/Desktop/SoC-2020/stl/b')
+print(len(DataObject.X))
 #x,y = DataObject[0]
 #print(x.shape)
 #print(y)

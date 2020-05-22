@@ -15,7 +15,7 @@ DataObject = MeshData('ModelNet10')
 
 max_epochs = 30
 for epochs in range(max_epochs):
-	for i in range(len(DataObject.final_dataset)):
+	for i in range(len(DataObject.X)):
 		x,y = DataObject[i]
 		optimizer.zero_grad()
 		yhat = model(x)
