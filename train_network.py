@@ -11,10 +11,12 @@ criterion = nn.CrossEntropyLoss()
 optimizer = optim.SGD(model.parameters(),lr = 0.001,momentum = 0.9)
 
 from dataset import MeshData
-DataObject = MeshData('ModelNet10')
+DataObject = MeshData('/home/prathmesh/Desktop/SoC-2020/ModelNet10_stl/ModelNet10')
 
 max_epochs = 30
 for epochs in range(max_epochs):
+	#print('e =',epochs)
+	running_loss = 0.0
 	for i in range(len(DataObject.X)):
 		x,y = DataObject[i]
 		x = x.float()
@@ -29,6 +31,7 @@ for epochs in range(max_epochs):
 		if i % 200 == 199:    # print every 2000 mini-batches
 			print('[%d, %5d] loss: %.3f' % (epoch + 1, i + 1, running_loss / 200))
 			running_loss = 0.0
+	#print(running_loss)
 
-PATH = 'new_model.pth'
-torch.save(net.state_dict(), PATH)
+PATH = '/home/prathmesh/Desktop/Mesh_Neural_Network/new_models.pth'
+torch.save(model.state_dict(), PATH)

@@ -57,6 +57,7 @@ class MeshData(Dataset):
 
 
 #DataObject = MeshData('/home/prathmesh/Desktop/SoC-2020/stl/b')
+#print(DataObject.X.type())
 #print(len(DataObject.X))
 #x,y = DataObject[0]
 #print(x.shape)
