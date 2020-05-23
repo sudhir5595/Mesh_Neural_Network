@@ -53,7 +53,7 @@ class MeshData(Dataset):
 		return len(final_dataset)
 
 	def __getitem__(self,idx):
-		return torch.from_numpy(self.X[idx]),self.Y[idx].unsqueeze(0)
+		return torch.from_numpy(self.X[idx]),self.Y[idx]
 
 
 #DataObject = MeshData('/home/prathmesh/Desktop/SoC-2020/stl/b')
