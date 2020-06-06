@@ -1,4 +1,26 @@
-# Mesh_Neural_Network
-SOC project
-Link to .stl Dataset : https://drive.google.com/open?id=1DjFMXIQHmM-4vwwVXQM6TTKwv2D7Y6jR
+## MeshNet: Mesh Neural Network for 3D Shape Representation
 
+Pytorch Implementation
+
+## Dataset
+Dataset ModelNet40 and ModelNet10 are both public and easily available.
+
+## Using the code
+You are free to use contents of this repo for academic and non-commercial purposes only.
+
+## Resources
+Implementation of https://arxiv.org/pdf/1811.11424v1.pdf.
+
+## Task
+Classifying 3D objects into 10 classes(or 40 depending on dataset used). MeshData is received and corresponding class is the output.
+
+## Dataset pre-processing
+Dataset containing .off files first converted to .stl files in convert.py file. Then input.py extracts the required data in mesh format.
+
+## Model Architecture
+Model.py contains the full model architecture. The architecture is designed to capture and combine both spatial and structural features of 3d models and thus tacke irregularities in 3d data. 
+Architecture is as follows:
+
+![](Captures/pipeline.png)
+
+### Note : All images have been taken from the mentioned papers.
