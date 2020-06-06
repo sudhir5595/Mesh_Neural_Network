@@ -15,7 +15,7 @@ Implementation of https://arxiv.org/pdf/1811.11424v1.pdf.
 Classifying 3D objects into 10 classes(or 40 depending on dataset used). MeshData is received and corresponding class is the output.
 
 ## Dataset pre-processing
-Dataset containing .off files first converted to .stl files in convert.py file. Then input.py extracts the required data in mesh format.
+Dataset containing .off files first converted to .stl files in convert.py file. Then input.py extracts the required data in mesh format.  
 
 ## Model Architecture
 Model.py contains the full model architecture. The architecture is designed to capture and combine both spatial and structural features of 3d models and thus tacke irregularities in 3d data. 
