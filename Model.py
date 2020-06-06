@@ -23,7 +23,6 @@ class Net(nn.Module):
     def forward(self,x):
         n = x.size()[0] 
         center = x[:,0:3]
-       # print(center.shape)
         corner = x[:,3:12]
         normal = x[:,12:15]
         neighbour_index = x[:,15:18]                  
@@ -31,19 +30,12 @@ class Net(nn.Module):
         y = self.spatial(center)
         z = self.structural(corner,normal,neighbour_index)
         out1,out2 = self.Mesh1(y,z,neighbour_index)
-        #print(out1.shape)
-        #print(out2.shape)
         out3,out4 = self.Mesh2(out1,out2,neighbour_index)
         
         out5 = torch.cat((out3,out4),dim=1)
-        #print(out5.shape)
-        #out5 = out5.view(n,1024,1)
-        out5 = self.linear(out5)
-        #out5 = out5.view(n,1024)
-        
-        out6 = torch.cat((out5,out3,out1),dim=1)
-        #print(out6.shape)
-        
+
+        out5 = self.linear(out5)        
+        out6 = torch.cat((out5,out3,out1),dim=1)        
         out6 = self.mlp2(out6)
         
         final_output = self.mlp3(out6)
@@ -57,13 +49,10 @@ class mlp2(nn.Module):
     def __init__(self):
         super(mlp2,self).__init__()
         #self.conv1 = nn.Conv1d(1792,1024,1)
-        self.linear = nn.Linear(1792,1024)
+        self.linear = nn.Linear(1792,1024)              #Linear layer is theoretically same as conv1d layer with kernel_size = 1. By experimenting on performance and time taken by the two layers we can decide which to keep
 
     def forward(self,x):
         n = x.size()[0]
-        #x = x.view(n,1792,1)
-        #x = self.conv1(x)
-        #x = x.view(n,1024)
         x = self.linear(x)
         l = torch.max(x,0)
         return l.values
@@ -80,15 +69,12 @@ class mlp3(nn.Module):
         x = self.dropout(F.relu(self.linear1(x)))
         x = self.dropout(F.relu(self.linear2(x)))
         x = self.linear3(x)
-        #print(x.shape)
         return x.unsqueeze(dim=0)
 
 
 class spatial_Des(nn.Module):                                                            #as described in the paper, this is just a multilayer perceptron
     def __init__(self):
         super(spatial_Des,self).__init__()
-        #self.conv1 = nn.Conv1d(3,64,1)
-        #self.conv2 = nn.Conv1d(64,64,1)
         self.linear1 = nn.Linear(64,64)
         self.linear2 = nn.Linear(3,64)
         #self.bn1 = nn.BatchNorm1d(64)
@@ -96,11 +82,7 @@ class spatial_Des(nn.Module):                                                   
         
     def forward(self,x):
         n = x.size()[0]
-        #x = x.view(n,3,1)
-        #x = F.relu(self.bn1(self.conv1(x)))
-        #x = self.conv2(x)
         x = self.linear1(F.relu(self.linear2(x)))
-        #x = x.view(n,64)
         return x
 
 
@@ -144,44 +126,9 @@ class Face_Rotate_Conv(nn.Module):
         
     def forward(self,corner):                # corner is (n,9) . we take these face wise and apply 1-d convolution of 6 features out of 9 in 3 turns
         n = corner.size()[0]
-        """
-        final_array = torch.zeros(n,64)
-        for i in range(n):
-            corner_1_i = corner[i,0:3]      #first corner vector
-            corner_2_i = corner[i,3:6]    #second
-            corner_3_i = corner[i,6:9]    #third
-
-            corner_1_2 = torch.cat((corner_1_i,corner_2_i),0)           #appending 1st and 2nd corner
-            corner_2_3 = torch.cat((corner_2_i,corner_3_i),0)           #2nd and 3rd
-            corner_3_1 = torch.cat((corner_3_i,corner_1_i),0)           #3rd and 1st
-
-            corner_1_2 = corner_1_2.view(1,1,6)                         #tensor.view function reshapes the 6 length tensor to 1,1,6(batch_size,input_channels,no_of_features) . This is the format of input to be sent in conv1d.
-            corner_2_3 = corner_2_3.view(1,1,6)
-            corner_3_1 = corner_3_1.view(1,1,6)
-
-            conv1_2 = self.conv(corner_1_2)
-            conv1_2 = conv1_2.view(-1)                  # a 32 length feature tensor
-
-            conv2_3 = self.conv(corner_2_3)
-            conv2_3 = conv2_3.view(-1)
-
-            conv3_1 = self.conv(corner_3_1)
-            conv3_1 = conv3_1.view(-1)
-
-
-            vec4 = torch.mean(torch.stack([conv1_2,conv2_3,conv3_1]),dim=0)     #simply (conv_1_2 + conv_2_3 + conv_3_1)/3
-
-
-            vec4 = self.linear4(F.relu(self.linear3(vec4)))
-            final_array[i,:] = vec4
-        """
-        #final_array = torch.zeros(n,6,3)
         final_array = torch.cat((corner[:,0:3],corner[:,3:6],corner[:,6:9],corner[:,0:3]),dim=1)
-        #final_array[:,:,1] = torch.cat((corner[:,3:6],corner[:,6:9]),dim=1)
-        #final_array[:,:,2] = torch.cat((corner[:,6:9],corner[:,0:3]),dim=1)
         final_array = final_array.view(n,1,12)
         final_array = self.conv(final_array)
-        #print(final_array.shape)
 
         new_arr = torch.mean(final_array,dim=2)
         vec4 = self.linear4(F.relu(self.linear3(new_arr)))
@@ -195,10 +142,7 @@ class Kernel_Correlation(nn.Module):
         super(Kernel_Correlation,self).__init__()
         self.theta_par = nn.Parameter(torch.rand(1,64, 4) * np.pi)
         self.phi_par = nn.Parameter(torch.rand(1,64, 4) *2* np.pi)
-        #self.learnable_kernel = nn.Parameter(torch.empty(64,k,3))
-        #self.learnable_kernel.requires_grad = True                           #since this matrix is learnable it is initialised by torch.ones and nn.parameter is applied.
         self.k = k
-        #nn.init.xavier_uniform_(self.learnable_kernel, gain=nn.init.calculate_gain('relu'))                                                                                        #change initialisation mode to xavier or he.        
 
     def forward(self,normal,neighbour):
         sigma = 0.2
@@ -223,32 +167,6 @@ class Kernel_Correlation(nn.Module):
         correl = torch.sum((fea - kernel)**2,1)
 
         fea = torch.sum(torch.sum(np.e**(correl / (-2*sigma**2)), 3), 2) / 16
-        """
-        final_array = torch.zeros(n,64)
-        for i in range(n):
-            neighbours = neighbour[i,:] 
-            a = int(neighbours[0].item())
-            b = int(neighbours[1].item())         
-            c = int(neighbours[2].item())                            # a,b,c are the three neighbour indexes
-            
-            #print(i)
-            #print(a,b,c)
-            #print(normal.shape)
-            
-            normal_i = normal[i,:]
-            normal_a = normal[a,:]
-            normal_b = normal[b,:]
-            normal_c = normal[c,:]
-
-            for m in range(64):
-                sum = 0
-                for l in range(self.k):
-                    x = normal_i - self.learnable_kernel[m,l,:]
-                    norm = torch.norm(x)
-                    sum = sum + exp(-1*norm*norm)/(2*sigma*sigma)
-
-                final_array[i,m] = sum/(self.k*4)
-        """
         return fea
 
 
@@ -294,30 +212,6 @@ class Aggregation1(nn.Module):
         
     def forward(self,structural,neighbour):
         n = structural.size()[0]
-        """                   #neighbour has size n,3 , structural has size n,131
-        final_array = torch.zeros(n,131)
-        
-        for i in range(n):
-            neighbours = neighbour[i,:] 
-            a = int(neighbours[0].item())
-            b = int(neighbours[1].item())         
-            c = int(neighbours[2].item())                            # a,b,c are the three neighbour indexes
-            
-            
-            features_i = structural[i,:]
-            features_a = structural[a,:]
-            features_b = structural[b,:]
-            features_c = structural[c,:]
-            
-            vec4 = torch.mean(torch.stack([features_i,features_a,features_b,features_c]),dim=0)         #implementing avg. aggregation and not concatenation
-
-            final_array[i,:] = vec4
-        
-        final_array = final_array.view(n,131,1)
-        final_array_1 = self.conv1(final_array)
-
-        final_array_2 = final_array_1.view(n,256)
-        """
         neighbour = neighbour.long()
         first_neigh = structural[neighbour[:,0]]
         second_neigh = structural[neighbour[:,1]]
@@ -376,30 +270,6 @@ class Aggregation2(nn.Module):
         
     def forward(self,out2,neighbour):
         n = neighbour.size()[0]
-        """                  
-        final_array = torch.zeros(n,256)
-        for i in range(n):
-            neighbours = neighbour[i,:] 
-            a = int(neighbours[0].item())
-            b = int(neighbours[1].item())         
-            c = int(neighbours[2].item())                            # a,b,c are the three neighbour indexes
-            
-            
-            features_i = out2[i,:]
-            features_a = out2[a,:]
-            features_b = out2[b,:]
-            features_c = out2[c,:]
-            
-            
-            
-            vec4 = torch.mean(torch.stack([features_i,features_a,features_b,features_c]),dim=0)         #implementing avg. aggregation and not concatenation
-            final_array[i,:] = vec4
-        
-        final_array = final_array.view(n,256,1)
-        final_array_1 = self.conv1(final_array)
-
-        final_array_2 = final_array_1.view(n,512)
-        """
 
         neighbour = neighbour.long()
         first_neigh = out2[neighbour[:,0]]
