@@ -25,3 +25,15 @@ Architecture is as follows:
 ![](Captures/pipeline.png)
 
 ### Note : All images have been taken from the mentioned papers.
+
+### Reference:
+```bibtex
+@inproceedings{feng2019meshnet,
+  title={MeshNet: Mesh neural network for 3D shape representation},
+  author={Feng, Yutong and Feng, Yifan and You, Haoxuan and Zhao, Xibin and Gao, Yue},
+  booktitle={Proceedings of the AAAI Conference on Artificial Intelligence},
+  volume={33},
+  pages={8279--8286},
+  year={2019}
+}
+```
