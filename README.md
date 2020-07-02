@@ -10,7 +10,7 @@ https://drive.google.com/file/d/1zZa1ttXVHLODY8fAeF23U22EzJm7OdR5/view?usp=shari
 You are free to use contents of this repo for academic and non-commercial purposes only.
 
 ## Resources
-Implementation of https://arxiv.org/pdf/1811.11424v1.pdf.
+Implementation of [Mesh Neural Network research Paper](https://arxiv.org/pdf/1811.11424v1.pdf)
 
 ## Task
 Classifying 3D objects into 10 classes(or 40 depending on dataset used). MeshData is received and corresponding class is the output.
