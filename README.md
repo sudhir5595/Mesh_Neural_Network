@@ -3,7 +3,7 @@
 Pytorch Implementation
 
 ## Dataset
-[Dataset ModelNet40 and ModelNet10](https://drive.google.com/file/d/1zZa1ttXVHLODY8fAeF23U22EzJm7OdR5/view?usp=sharing) are both public and easily available.
+[Dataset ModelNet10](https://drive.google.com/file/d/1zZa1ttXVHLODY8fAeF23U22EzJm7OdR5/view?usp=sharing) are both public and easily available.
 
 ## Using the code
 You are free to use contents of this repo for academic and non-commercial purposes only.
