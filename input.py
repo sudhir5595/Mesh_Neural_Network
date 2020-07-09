@@ -1,6 +1,6 @@
 import numpy as np
 import open3d as o3d
-
+from downsizing import downsize
 
 def find_neighbor(faces, faces_contain_this_vertex, vf1, vf2, except_face):
     for i in (faces_contain_this_vertex[vf1] & faces_contain_this_vertex[vf2]):
@@ -25,6 +25,7 @@ def input_stl(path):
         parameters["centroids"] = np.zeros((parameters["num_tri"],3))                 
         parameters["corners"] = np.zeros((parameters["num_tri"], 9))
 
+        parameters = downsize(parameters, 1024)
         faces_contain_this_vertex = []    
         for i in range(parameters["vertices"].shape[0]):
             faces_contain_this_vertex.append(set([]))
@@ -63,8 +64,10 @@ def input_stl(path):
 
         parameters["neigh_index"] = np.array(parameters["neigh_index"])
         #parameters["neigh_index"].sort(axis = 1)
-
+        
         return parameters
     except:
         return False    
-#o = input_stl('/home/prathmesh/Desktop/SoC-2020/ModelNet10_stl/ModelNet10/bathtub/train/bathtub_0096.stl')
+#o = input_stl('/media/prathmesh/PPB External HDD/IITB/SoC/SoC-2020/ModelNet10_stl (copy)/ModelNet10/chair/train/chair_0889.stl')
+#print(o["triangles"])
+#print(o)
