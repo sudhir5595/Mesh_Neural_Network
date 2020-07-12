@@ -69,7 +69,7 @@ class mlp3(nn.Module):
         x = self.dropout(F.relu(self.linear1(x)))
         x = self.dropout(F.relu(self.linear2(x)))
         x = self.linear3(x)
-        return x.unsqueeze(dim=0)
+        return F.softmax(x.unsqueeze(dim=0))
 
 
 class spatial_Des(nn.Module):                                                            #as described in the paper, this is just a multilayer perceptron
